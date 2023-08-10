@@ -5,7 +5,7 @@
 
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-#include <dt-bindings/clock/mediatek,mt6763-clk.h>
+#include <dt-bindings/clock/mediatek,mt6762-clk.h>
 #include <dt-bindings/phy/phy.h>
 
 / {
@@ -307,6 +307,7 @@
             #clock-cells = <1>;
         };
 
+        /*
         usb2: usb@11200000 {
 			compatible = "mediatek,mt6762-musb", "mediatek,mtk-musb";
 			reg = <0 0x11200000 0 0x10000>,
@@ -314,8 +315,8 @@
 			interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_LOW>;
 			interrupt-names = "mc";
 			clocks = <&infracfg_ao CLK_IFR_ICUSB>,
-				 	 <&system_clk>,
-				 	 <&topckgen CLK_TOP_UNIVPLL_D4>;
+                     <&system_clk CLK_TOP_USB_TOP_SEL>,
+                     <&topckgen CLK_TOP_UNIVPLL3_D4>;
 			clock-names = "main", "mcu", "univpll";
 			phys = <&usb2port0 PHY_TYPE_USB2>;
 			dr_mode = "otg";
@@ -332,33 +333,34 @@
 			status = "disabled";
 
 			usb2port0: usb-phy@11230000 {
-				reg = <0 0x11230000 0 0x10000>;;
-				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				reg = <0 0x11230000 0 0x10000>;
+				clocks = <&infracfg_ao CLK_IFR_ICUSB>;
 				clock-names = "ref";
 				#phy-cells = <1>;
 			};
 
 			usb2port1: usb-phy@11240000 {
 				reg = <0 0x11240000 0 0x10000>;
-				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clocks = <&infracfg_ao CLK_IFR_ICUSB>;
 				clock-names = "ref";
 				#phy-cells = <1>;
 			};
 
 			usb2port2: usb-phy@11250000 {
 				reg = <0 0x11250000 0 0x10000>;
-				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clocks = <&infracfg_ao CLK_IFR_ICUSB>;
 				clock-names = "ref";
 				#phy-cells = <1>;
 			};
 
 			usb2port3: usb-phy@11260000 {
 				reg = <0 0x11250000 0 0x10000>;
-				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clocks = <&infracfg_ao CLK_IFR_ICUSB>;
 				clock-names = "ref";
 				#phy-cells = <1>;
 			};
 		};
+        */
 
         gic: interrupt-controller@0c000000 {
             compatible = "arm,gic-v3";

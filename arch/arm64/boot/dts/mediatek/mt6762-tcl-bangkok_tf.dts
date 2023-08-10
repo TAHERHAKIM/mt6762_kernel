@@ -25,6 +25,7 @@
 	height = <1440>;
 };
 
+/*
 &usb2 {
 	status = "okay";
 
@@ -39,3 +40,4 @@
 &usb2phy {
 	status = "okay";
 };
+*/
