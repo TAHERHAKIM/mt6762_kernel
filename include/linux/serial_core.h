@@ -787,6 +787,7 @@ struct earlycon_device {
 	struct uart_port port;
 	char options[32];		/* e.g., 115200n8 */
 	unsigned int baud;
+	unsigned long node;
 };
 
 struct earlycon_id {
