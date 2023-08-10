@@ -5,6 +5,7 @@
 
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/mediatek,mt6763-clk.h>
 
 / {
     compatible = "mediatek,mt6762";
@@ -232,10 +233,29 @@
             reg = <0x00 0x40000000 0x00 0x20000000>;
         };
 
+        topckgen: topckgen@10000000 {
+            compatible = "mediatek,mt6762-topckgen";
+            reg = <0x00 0x10000000 0x00 0x1000>;
+            #clock-cells = <1>;
+        };
+
+        infracfg_ao: clock-controller@10001000 {
+            compatible = "mediatek,mt6762-infracfg_ao";
+            reg = <0x00 0x10001000 0x00 0x1000>;
+            interrupts = <GIC_SPI 147 IRQ_TYPE_EDGE_RISING>;
+            #clock-cells = <1>;
+        };
+
         watchdog@10007000 {
             compatible = "mediatek,mt6762-wdt",
                          "mediatek,mt6589-wdt";
             reg = <0x00 0x10007000 0x00 0x1000>;
+        };
+
+        apmixed: apmixed@1000c000 {
+            compatible = "mediatek,mt6762-apmixed";
+            reg = <0x00 0x1000c000 0x00 0xe00>;
+            #clock-cells = <1>;
         };
 
         gic: interrupt-controller@0c000000 {
