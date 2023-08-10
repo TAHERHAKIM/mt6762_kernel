@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Device Tree Source for TCL A3 (bangkok_tf)
+ *
+ * Copyright (C) 2023 Brandon Boese
+ */
+
+/dts-v1/;
+
+#include "mt6762.dtsi"
+
+/ {
+    model = "TCL A3";
+    compatable = "tcl,bangkok_tf", "mediatek,mt6762", "mediatek,mt6765";
+
+    chosen {
+        stdout-path = &framebuffer0;
+    };
+};
+
+framebuffer0 {
+	status = "okay";
+	width = <720>;
+	stride = <((720 + 8) * 4)>;
+	height = <1440>;
+};
