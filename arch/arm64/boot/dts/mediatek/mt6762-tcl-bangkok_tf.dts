@@ -18,7 +18,7 @@
     };
 };
 
-framebuffer0 {
+&framebuffer0 {
 	status = "okay";
 	width = <720>;
 	stride = <((720 + 8) * 4)>;
