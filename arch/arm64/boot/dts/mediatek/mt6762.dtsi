@@ -6,6 +6,7 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/clock/mediatek,mt6763-clk.h>
+#include <dt-bindings/phy/phy.h>
 
 / {
     compatible = "mediatek,mt6762";
@@ -150,28 +151,28 @@
             size = <0x00 0x510000>;
 #endif
             alignment = <0x00 0x10000>;
-            alloc-ranges = <0x00 0x40000000 0x00 0x60000000>;
+            alloc-ranges = <0 0x40000000 0 0x60000000>;
         };
 
         scp-share {
             no-map;
             size = <0x00 0x00300000>;
             alignment = <0x00 0x1000000>;
-            alloc-ranges = <0x00 0x40000000 0x00 0x50000000>;
+            alloc-ranges = <0 0x40000000 0 0x50000000>;
         };
 
         consys {
             no-map;
             size = <0x00 0x400000>;
             alignment = <0x00 0x1000000>;
-            alloc-ranges = <0x00 0x40000000 0x00 0x80000000>;
+            alloc-ranges = <0 0x40000000 0 0x80000000>;
         };
 
         wifi {
             no-map;
             size = <0x00 0x300000>;
             alignment = <0x00 0x1000000>;
-            alloc-ranges = <0x00 0x40000000 0x00 0x80000000>;
+            alloc-ranges = <0 0x40000000 0 0x80000000>;
         };
 
         /* FIXME: I have no idea what this does. */
@@ -182,7 +183,7 @@
             no-map;
             size = <0x00 0x10000000>;
             alignment = <0x00 0x1000000>;
-            alloc-range = <0x00 0xc0000000 0 0x10000000>;
+            alloc-range = <0 0xc0000000 0 0x10000000>;
         };
 
         /* FIXME: I have no idea what this does. Something to do with a C heap? */
@@ -190,7 +191,7 @@
             no-map;
             size = <0x00 0x5000>;
             alignment = <0x00 0x1000>;
-            alloc-ranges = <0x00 0xc0000000 0 0x10000000>;
+            alloc-ranges = <0 0xc0000000 0 0x10000000>;
         };
 
         /* FIXME: is this even required on mainline?? */
@@ -206,10 +207,30 @@
             size = <0x00 0x200000>;
             alignment = <0x00 0x200000>;
 #endif
-            alloc-ranges = <0x00 0x40000000 0x00 0x50000000>;
+            alloc-ranges = <0 0x40000000 0 0x50000000>;
         };
 #endif
     };
+
+    clocks {
+		clk26m: clk26m {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <26000000>;
+		};
+
+		clk32k: clk32k {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <32000>;
+		};
+
+		system_clk: sysclk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <13000000>;
+		};
+	};
 
     timer {
         compatible = "arm,armv8-timer";
@@ -230,33 +251,33 @@
 
         memory@40000000 {
             device_type = "memory";
-            reg = <0x00 0x40000000 0x00 0x20000000>;
+            reg = <0 0x40000000 0 0x20000000>;
         };
 
         topckgen: topckgen@10000000 {
             compatible = "mediatek,mt6762-topckgen";
-            reg = <0x00 0x10000000 0x00 0x1000>;
+            reg = <0 0x10000000 0 0x1000>;
             #clock-cells = <1>;
         };
 
         infracfg_ao: clock-controller@10001000 {
             compatible = "mediatek,mt6762-infracfg_ao";
-            reg = <0x00 0x10001000 0x00 0x1000>;
+            reg = <0 0x10001000 0 0x1000>;
             interrupts = <GIC_SPI 147 IRQ_TYPE_EDGE_RISING>;
             #clock-cells = <1>;
         };
 
         pio: pin-controller@1000b000 {
             compatible = "mediatek,mt6762-pinctrl";
-            reg = <0x00 0x10005000 0x00 0x1000>,
-                  <0x00 0x10002000 0x00 0x200>,
-                  <0x00 0x10002200 0x00 0x200>,
-                  <0x00 0x10002400 0x00 0x200>,
-                  <0x00 0x10002600 0x00 0x200>,
-                  <0x00 0x10002800 0x00 0x200>,
-                  <0x00 0x10002a00 0x00 0x200>,
-                  <0x00 0x10002c00 0x00 0x200>,
-                  <0x00 0x1000b000 0x00 0x1000>;
+            reg = <0 0x10005000 0 0x1000>,
+                  <0 0x10002000 0 0x200>,
+                  <0 0x10002200 0 0x200>,
+                  <0 0x10002400 0 0x200>,
+                  <0 0x10002600 0 0x200>,
+                  <0 0x10002800 0 0x200>,
+                  <0 0x10002a00 0 0x200>,
+                  <0 0x10002c00 0 0x200>,
+                  <0 0x1000b000 0 0x1000>;
             reg-names = "gpio",
                         "io_cfg_lt",
                         "io_cfg_lm",
@@ -277,14 +298,67 @@
         watchdog@10007000 {
             compatible = "mediatek,mt6762-wdt",
                          "mediatek,mt6589-wdt";
-            reg = <0x00 0x10007000 0x00 0x1000>;
+            reg = <0 0x10007000 0 0x1000>;
         };
 
         apmixed: apmixed@1000c000 {
             compatible = "mediatek,mt6762-apmixed";
-            reg = <0x00 0x1000c000 0x00 0xe00>;
+            reg = <0 0x1000c000 0 0xe00>;
             #clock-cells = <1>;
         };
+
+        usb2: usb@11200000 {
+			compatible = "mediatek,mt6762-musb", "mediatek,mtk-musb";
+			reg = <0 0x11200000 0 0x10000>,
+		          <0 0x11CC0000 0 0x10000>;
+			interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_LOW>;
+			interrupt-names = "mc";
+			clocks = <&infracfg_ao CLK_IFR_ICUSB>,
+				 	 <&system_clk>,
+				 	 <&topckgen CLK_TOP_UNIVPLL_D4>;
+			clock-names = "main", "mcu", "univpll";
+			phys = <&usb2port0 PHY_TYPE_USB2>;
+			dr_mode = "otg";
+			status = "disabled";
+	    };
+
+        usb2phy: phy@11210000 {
+			compatible = "mediatek,mt6762-tphy", "mediatek,generic-tphy-v1";
+			reg = <0 0x11210000 0 0x10000>;
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges;
+
+			status = "disabled";
+
+			usb2port0: usb-phy@11230000 {
+				reg = <0 0x11230000 0 0x10000>;;
+				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clock-names = "ref";
+				#phy-cells = <1>;
+			};
+
+			usb2port1: usb-phy@11240000 {
+				reg = <0 0x11240000 0 0x10000>;
+				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clock-names = "ref";
+				#phy-cells = <1>;
+			};
+
+			usb2port2: usb-phy@11250000 {
+				reg = <0 0x11250000 0 0x10000>;
+				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clock-names = "ref";
+				#phy-cells = <1>;
+			};
+
+			usb2port3: usb-phy@11260000 {
+				reg = <0 0x11250000 0 0x10000>;
+				clocks = <&infracfg_ao CLK_INFRACFG_AO_ICUSB_CG>;
+				clock-names = "ref";
+				#phy-cells = <1>;
+			};
+		};
 
         gic: interrupt-controller@0c000000 {
             compatible = "arm,gic-v3";
@@ -292,9 +366,9 @@
             interrupt-parent = <&gic>;
             interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
             interrupt-controller;
-            reg = <0x00 0x0c000000 0x00 0x40000>, // distributor
-                  <0x00 0x0c100000 0x00 0x200000>, // redistributor
-                  <0x00 0x10200a80 0x00 0x50>; // intpol
+            reg = <0 0x0c000000 0 0x40000>, // distributor
+                  <0 0x0c100000 0 0x200000>, // redistributor
+                  <0 0x10200a80 0 0x50>; // intpol
         };
 
         sysirq: intpol-controller@10200a80 {

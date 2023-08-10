@@ -24,3 +24,18 @@
 	stride = <((720 + 8) * 4)>;
 	height = <1440>;
 };
+
+&usb2 {
+	status = "okay";
+
+	usb_con: connector {
+		compatible = "gpio-usb-b-connector",
+                     "usb-b-connector";
+		label = "micro-USB";
+        type = "micro";
+	};
+};
+
+&usb2phy {
+	status = "okay";
+};
