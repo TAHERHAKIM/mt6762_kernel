@@ -1,0 +1,261 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2023 Brandon Boese
+ */
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+    compatible = "mediatek,mt6762";
+    interrupt-parent = <&sysirq>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+
+    psci {
+        compatible      = "arm,psci-1.0";
+        method          = "smc";
+    };
+
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        cpu0: cpu@0 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x000>;
+        };
+
+        cpu1: cpu@1 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x001>;
+        };
+
+        cpu2: cpu@2 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x002>;
+        };
+
+        cpu3: cpu@3 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x003>;
+        };
+
+        cpu4: cpu@100 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x100>;
+        };
+
+        cpu5: cpu@101 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x101>;
+        };
+
+        cpu6: cpu@102 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x102>;
+        };
+
+        cpu7: cpu@103 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a53";
+            enable-method = "psci";
+            reg = <0x103>;
+        };
+    };
+
+    cpu-map {
+        cluster0 {
+            core0 {
+                cpu = <&cpu0>;
+            };
+            core1 {
+                cpu = <&cpu1>;
+            };
+            core2 {
+                cpu = <&cpu2>;
+            };
+            core3 {
+                cpu = <&cpu3>;
+            };
+        };
+
+        cluster1 {
+            core0 {
+                cpu = <&cpu4>;
+            };
+            core1 {
+                cpu = <&cpu5>;
+            };
+            core2 {
+                cpu = <&cpu6>;
+            };
+            core3 {
+                cpu = <&cpu7>;
+            };
+        };
+    };
+
+    chosen {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        /*
+         * NOTE: might not be required on mt6762
+         * requires some extra testing
+         */
+        /* FIXME: without maxcpus=1 the kernel will panic while bringing up the secondary CPUs */
+        bootargs = "maxcpus=1";
+
+        /*
+         * Use display framebuffer setup by the lk bootloader for simplefb
+         * FIXME: text is rendered fine, but any images not?!
+         * FIXME: mt6763 values are used here instead of mt6762 values
+         */
+        framebuffer0: framebuffer@7dca0000 {
+            compatible = "simple-framebuffer";
+            reg = <0x0 0x7dca0000 0x0 0x2250000>;
+            format = "a8r8g8b8";
+            status = "disabled";
+        };
+    };
+
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        sspm-share {
+            no-map;
+            status = "okay";
+#ifdef CONFIG_MTK_GMO_RAM_OPTIMIZE
+            size = <0x00 0x110000>;
+#else
+            size = <0x00 0x510000>;
+#endif
+            alignment = <0x00 0x10000>;
+            alloc-ranges = <0x00 0x40000000 0x00 0x60000000>;
+        };
+
+        scp-share {
+            no-map;
+            size = <0x00 0x00300000>;
+            alignment = <0x00 0x1000000>;
+            alloc-ranges = <0x00 0x40000000 0x00 0x50000000>;
+        };
+
+        consys {
+            no-map;
+            size = <0x00 0x400000>;
+            alignment = <0x00 0x1000000>;
+            alloc-ranges = <0x00 0x40000000 0x00 0x80000000>;
+        };
+
+        wifi {
+            no-map;
+            size = <0x00 0x300000>;
+            alignment = <0x00 0x1000000>;
+            alloc-ranges = <0x00 0x40000000 0x00 0x80000000>;
+        };
+
+        /* FIXME: I have no idea what this does. */
+        ssmr {
+            /* FIXME: Was originally reusable in the downstream dts
+             * but was still in the reserved memory section?
+             */
+            no-map;
+            size = <0x00 0x10000000>;
+            alignment = <0x00 0x1000000>;
+            alloc-range = <0x00 0xc0000000 0 0x10000000>;
+        };
+
+        /* FIXME: I have no idea what this does. Something to do with a C heap? */
+        ion-carveout-heap {
+            no-map;
+            size = <0x00 0x5000>;
+            alignment = <0x00 0x1000>;
+            alloc-ranges = <0x00 0xc0000000 0 0x10000000>;
+        };
+
+        /* FIXME: is this even required on mainline?? */
+
+#ifdef CONFIG_MICROTRUST_TEE_SUPPORT
+        soter-microtrust {
+            no-map;
+#if defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT) || \
+    defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
+            size = <0x00 0x800000>;
+            alignment = <0x00 0x1000000>;
+#else
+            size = <0x00 0x200000>;
+            alignment = <0x00 0x200000>;
+#endif
+            alloc-ranges = <0x00 0x40000000 0x00 0x50000000>;
+        };
+#endif
+    };
+
+    timer {
+        compatible = "arm,armv8-timer";
+        interrupt-parent = <&gic>;
+        interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
+                     <GIC_PPI 14 IRQ_TYPE_LEVEL_LOW>,
+                     <GIC_PPI 11 IRQ_TYPE_LEVEL_LOW>,
+                     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>;
+    };
+
+    soc {
+        /* FIXME: Copied from mt6763. Confirm works with mt6762 */
+        #address-cells = <2>;
+        #size-cells = <2>;
+        compatible = "simple-bus";
+        ranges;
+        /* End FIXME */
+
+        memory@40000000 {
+            device_type = "memory";
+            reg = <0x00 0x40000000 0x00 0x20000000>;
+        };
+
+        watchdog@10007000 {
+            compatible = "mediatek,mt6762-wdt",
+                         "mediatek,mt6589-wdt";
+            reg = <0x00 0x10007000 0x00 0x1000>;
+        };
+
+        gic: interrupt-controller@0c000000 {
+            compatible = "arm,gic-v3";
+            #interrupt-cells = <3>;
+            interrupt-parent = <&gic>;
+            interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+            interrupt-controller;
+            reg = <0x00 0x0c000000 0x00 0x40000>, // distributor
+                  <0x00 0x0c100000 0x00 0x200000>, // redistributor
+                  <0x00 0x10200a80 0x00 0x50>; // intpol
+        };
+
+        sysirq: intpol-controller@10200a80 {
+            compatible = "mediatek,mt6577-sysirq",
+                         "mediatek,mt6762-sysirq";
+            interrupt-controller;
+            #interrupt-cells = <3>;
+            interrupt-parent = <&gic>;
+            reg = <0x00 0x10200a80 0x00 0x50>;
+        };
+    };
+};

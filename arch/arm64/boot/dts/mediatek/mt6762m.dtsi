@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2023 Brandon Boese
+ */
+
+#include "mt6762.dtsi"
+
+/* TODO: figure out CPU differences... */
