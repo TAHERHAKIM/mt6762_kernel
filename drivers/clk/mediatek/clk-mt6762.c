@@ -725,7 +725,7 @@ static const struct mtk_pll_data plls[] = {
 	    PLL_AO, 22, 8, 0x02A4, 24, 0, 0, 0, 0x02A4, 0),
 };
 
-static int clk_mt6762_apmixed_probe(struct platform_device *pdev)
+static int __init clk_mt6762_apmixed_probe(struct platform_device *pdev)
 {
 	struct clk_hw_onecell_data *clk_data;
 	int r;
@@ -760,7 +760,7 @@ static int clk_mt6762_apmixed_probe(struct platform_device *pdev)
 	return r;
 }
 
-static int clk_mt6762_top_probe(struct platform_device *pdev)
+static int __init clk_mt6762_top_probe(struct platform_device *pdev)
 {
 	int r;
 	struct device_node *node = pdev->dev.of_node;
@@ -801,7 +801,7 @@ static int clk_mt6762_top_probe(struct platform_device *pdev)
 	return r;
 }
 
-static int clk_mt6762_ifr_probe(struct platform_device *pdev)
+static int __init clk_mt6762_ifr_probe(struct platform_device *pdev)
 {
 	struct clk_hw_onecell_data *clk_data;
 	int r;
