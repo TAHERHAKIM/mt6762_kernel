@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2013 Intel Corporation; author Matt Fleming
+ * Copyright (C) 2022 Markuss Broks <markuss.broks@gmail.com>
  */
 
 #include <asm/early_ioremap.h>
@@ -14,7 +15,6 @@
 #include <linux/of_fdt.h>
 #include <linux/serial_core.h>
 #include <linux/screen_info.h>
-#include <linux/string.h>
 
 struct fb_earlycon {
 	u32 x, y, curr_x, curr_y, depth, stride;
@@ -26,14 +26,12 @@ struct fb_earlycon {
 static const struct console *earlycon_console __initconst;
 static struct fb_earlycon info;
 static const struct font_desc *font;
-static u16 cur_line_y, max_line_y;
-static u32 efi_x_array[1024];
 
 static int __init simplefb_earlycon_remap_fb(void)
 {
 	int is_ram;
-	/* bail if there is no bootconsole or it was unregistered already */
-	if (!earlycon_console || !console_is_registered(earlycon_console))
+	/* bail if there is no bootconsole or it has been disabled already */
+	if (!earlycon_console || !(earlycon_console->flags & CON_ENABLED))
 		return 0;
 
 	is_ram = region_intersects(info.phys_base, info.size,
@@ -49,8 +47,8 @@ early_initcall(simplefb_earlycon_remap_fb);
 
 static int __init simplefb_earlycon_unmap_fb(void)
 {
-	/* unmap the bootconsole fb unless keep_bootcon left it registered */
-	if (info.virt_base && !console_is_registered(earlycon_console))
+	/* unmap the bootconsole fb unless keep_bootcon has left it enabled */
+	if (info.virt_base && !(earlycon_console->flags & CON_ENABLED))
 		memunmap(info.virt_base);
 	return 0;
 }
@@ -86,22 +84,14 @@ static void simplefb_earlycon_clear_scanline(unsigned int y)
 		return;
 
 	memset(dst, 0, len);
-	efi_earlycon_unmap(dst, len);
+	simplefb_earlycon_unmap(dst, len);
 }
 
-static void efi_earlycon_scroll_up(void)
+static void simplefb_earlycon_scroll_up(void)
 {
 	unsigned long *dst, *src;
-	u16 maxlen = 0;
 	u16 len;
 	u32 i, height;
-
-	/* Find the cached maximum x coordinate */
-	for (i = 0; i < max_line_y; i++) {
-		if (efi_x_array[i] > maxlen)
-			maxlen = efi_x_array[i];
-	}
-	maxlen *= 4;
 
 	len = info.stride;
 	height = info.y;
@@ -117,7 +107,7 @@ static void efi_earlycon_scroll_up(void)
 			return;
 		}
 
-		memmove(dst, src, maxlen);
+		memmove(dst, src, len);
 
 		simplefb_earlycon_unmap(src, len);
 		simplefb_earlycon_unmap(dst, len);
@@ -147,7 +137,6 @@ static void simplefb_earlycon_write_char(u8 *dst, unsigned char c, unsigned int 
 static void
 simplefb_earlycon_write(struct console *con, const char *str, unsigned int num)
 {
-	u32 cur_efi_x = efi_x;
 	unsigned int len;
 	const char *s;
 	void *dst;
@@ -155,10 +144,16 @@ simplefb_earlycon_write(struct console *con, const char *str, unsigned int num)
 	len = info.stride;
 
 	while (num) {
-		unsigned int linemax = (info.x - info.curr_x) / font->width;
-		unsigned int h, count;
+		unsigned int linemax;
+		unsigned int h, count = 0;
 
-		count = strnchrnul(str, num, '\n') - str;
+		for (s = str; *s && *s != '\n'; s++) {
+			if (count == num)
+				break;
+			count++;
+		}
+
+		linemax = (info.x - info.curr_x) / font->width;
 		if (count > linemax)
 			count = linemax;
 
@@ -187,7 +182,6 @@ simplefb_earlycon_write(struct console *con, const char *str, unsigned int num)
 		str += count;
 
 		if (num > 0 && *s == '\n') {
-			cur_efi_x = efi_x;
 			info.curr_x = 0;
 			info.curr_y += font->height;
 			str++;
@@ -201,9 +195,6 @@ simplefb_earlycon_write(struct console *con, const char *str, unsigned int num)
 
 		if (info.curr_y + font->height > info.y) {
 			u32 i;
-
-			efi_x_array[cur_line_y] = cur_efi_x;
-			cur_line_y = (cur_line_y + 1) % max_line_y;
 
 			info.curr_y -= font->height;
 			simplefb_earlycon_scroll_up();
@@ -267,14 +258,8 @@ EARLYCON_DECLARE(simplefb, simplefb_earlycon_setup);
 static int __init simplefb_earlycon_setup_efi(struct earlycon_device *device,
 					      const char *opt)
 {
-
-
-	EARLYCON_DECLARE(efifb, simplefb_earlycon_setup_efi);
-#endif
-	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI) {
-		fb_probed = true;
+	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
 		return -ENODEV;
-	}
 
 	info.phys_base = screen_info.lfb_base;
 	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
@@ -287,7 +272,10 @@ static int __init simplefb_earlycon_setup_efi(struct earlycon_device *device,
 	return simplefb_earlycon_setup_common(device, opt);
 }
 
-	#ifdef CONFIG_OF_EARLY_FLATTREE
+EARLYCON_DECLARE(efifb, simplefb_earlycon_setup_efi);
+#endif
+
+#ifdef CONFIG_OF_EARLY_FLATTREE
 static int __init simplefb_earlycon_setup_of(struct earlycon_device *device,
 					     const char *opt)
 {
@@ -304,14 +292,6 @@ static int __init simplefb_earlycon_setup_of(struct earlycon_device *device,
 		return -ENODEV;
 	info.x = be32_to_cpu(*val);
 
-	/* Fill the cache with maximum possible value of x coordinate */
-	memset32(efi_x_array, rounddown(xres, font->width), ARRAY_SIZE(efi_x_array));
-	efi_y = rounddown(yres, font->height);
-
-	/* Make sure we have cache for the x coordinate for the full screen */
-	max_line_y = efi_y / font->height + 1;
-	cur_line_y = 0;
-
 	val = of_get_flat_dt_prop(device->node, "height", NULL);
 	if (!val)
 		return -ENODEV;
@@ -324,5 +304,6 @@ static int __init simplefb_earlycon_setup_of(struct earlycon_device *device,
 
 	return simplefb_earlycon_setup_common(device, opt);
 }
+
 OF_EARLYCON_DECLARE(simplefb, "simple-framebuffer", simplefb_earlycon_setup_of);
 #endif

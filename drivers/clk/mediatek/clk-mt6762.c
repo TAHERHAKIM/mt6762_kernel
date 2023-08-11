@@ -17,7 +17,7 @@
 #include "clk-mux.h"
 #include "clk-pll.h"
 
-#include <dt-bindings/clock/mt6762-clk.h>
+#include <dt-bindings/clock/mediatek,mt6762-clk.h>
 
 /*fmeter div select 4*/
 #define _DIV4_ 1
