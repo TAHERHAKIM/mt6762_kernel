@@ -119,20 +119,12 @@
         ranges;
 
         /*
-         * NOTE: might not be required on mt6762
-         * requires some extra testing
-         */
-        /* FIXME: without maxcpus=1 the kernel will panic while bringing up the secondary CPUs */
-        bootargs = "maxcpus=1";
-
-        /*
          * Use display framebuffer setup by the lk bootloader for simplefb
          * FIXME: text is rendered fine, but any images not?!
-         * FIXME: mt6763 values are used here instead of mt6762 values
          */
-        framebuffer0: framebuffer@7dca0000 {
+        framebuffer0: framebuffer@7dad0000 {
             compatible = "simple-framebuffer";
-            reg = <0x0 0x7dca0000 0x0 0x2250000>;
+            reg = <0 0x7dad0000 0 0xe30000>;
             format = "a8r8g8b8";
             status = "disabled";
         };
