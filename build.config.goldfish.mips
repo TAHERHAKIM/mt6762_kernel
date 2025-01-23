@@ -1,10 +1,10 @@
 ARCH=mips
-BRANCH=android-4.4
+BRANCH=android-6.5
 CROSS_COMPILE=mips64el-linux-android-
 DEFCONFIG=ranchu_defconfig
 EXTRA_CMDS=''
 KERNEL_DIR=common
-LINUX_GCC_CROSS_COMPILE_PREBUILTS_BIN=prebuilts/gcc/linux-x86/mips/mips64el-linux-android-4.9/bin
+LINUX_GCC_CROSS_COMPILE_PREBUILTS_BIN=prebuilts/gcc/linux-x86/mips/mips64el-linux-android-6.5/bin
 FILES="
 vmlinux
 System.map
